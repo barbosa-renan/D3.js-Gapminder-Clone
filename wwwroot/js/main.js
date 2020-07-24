@@ -14,7 +14,19 @@ var g = d3.select("#chart-area")
 
 var time = 0;
 
-// scales
+// Tooltip
+var tip = d3.tip().attr('class', 'd3-tip')
+    .html(function(d) {
+        var text = "<strong>Country:</strong> <span style='color:red'>" + d.country + "</span><br>";
+        text += "<strong>Continent:</strong> <span style='color:red;text-transform:capitalize'>" + d.continent + "</span><br>";
+        text += "<strong>Life Expectancy:</strong> <span style='color:red'>" + d3.format(".2f")(d.life_exp) + "</span><br>";
+        text += "<strong>GDP Per Capita:</strong> <span style='color:red'>" + d3.format("$,.0f")(d.income) + "</span><br>";
+        text += "<strong>Population:</strong> <span style='color:red'>" + d3.format(",.0f")(d.population) + "</span><br>";
+        return text;
+    });
+g.call(tip);
+
+// Scales
 var x = d3.scaleLog()
     .base(10)
     .range([0, width])
@@ -27,14 +39,13 @@ var area = d3.scaleLinear()
     .domain([2000, 1400000000]);
 var continentColor = d3.scaleOrdinal(d3.schemePastel1);
 
-// labels
+// Labels
 var xLabel = g.append("text")
     .attr("y", height + 50)
     .attr("x", width / 2)
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .text("GDP Per Capita ($)");
-
 var yLabel = g.append("text")
     .attr("transform", "rotate(-90)")
     .attr("y", -40)
@@ -42,13 +53,11 @@ var yLabel = g.append("text")
     .attr("font-size", "20px")
     .attr("text-anchor", "middle")
     .text("Life Expectancy (Years)")
-
 var timeLabel = g.append("text")
     .attr("y", height - 10)
     .attr("x", width - 40)
     .attr("font-size", "40px")
-    .attr("font-weight", "bold")
-    .attr("opacity", "0.15")
+    .attr("opacity", "0.4")
     .attr("text-anchor", "middle")
     .text("1800");
 
@@ -83,9 +92,9 @@ continents.forEach(function(continent, i) {
         .attr("height", 10)
         .attr("fill", continentColor(continent));
 
-    legend.append("text")
+    legendRow.append("text")
         .attr("x", -10)
-        .attr("y", (20 * i) + 10)
+        .attr("y", 10)
         .attr("text-anchor", "end")
         .style("text-transform", "capitalize")
         .text(continent);
@@ -138,6 +147,8 @@ function update(data) {
         .append("circle")
         .attr("class", "enter")
         .attr("fill", function(d) { return continentColor(d.continent); })
+        .on("mouseover", tip.show)
+        .on("mouseout", tip.hide)
         .merge(circles)
         .transition(t)
         .attr("cy", function(d) { return y(d.life_exp); })
